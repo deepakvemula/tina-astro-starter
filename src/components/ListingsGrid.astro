@@ -1,0 +1,49 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ListingCard from "./ListingCard.astro";
+
+interface Props {
+  listings: CollectionEntry<"properties">[];
+  title?: string;
+}
+
+const { listings, title = "Featured Properties" } = Astro.props;
+---
+
+<section class="listings-grid-section w-full">
+  {
+    title && (
+      <h2 class="sigmar-ff text-balance text-center mb-6 sm:mb-10 text-gray-900 dark:text-white">
+        {title}
+      </h2>
+    )
+  }
+
+  {
+    listings.length === 0 ? (
+      <div class="text-center py-12 sm:py-16">
+        <p class="text-gray-500 dark:text-gray-400 text-sm sm:text-base">
+          No properties available at the moment.
+        </p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2  gap-4 sm:gap-6 lg:gap-8 w-full">
+        {listings.map((listing) => (
+          <ListingCard listing={listing} />
+        ))}
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .listings-grid-section {
+    margin: 2rem 0;
+  }
+
+  @media (max-width: 640px) {
+    .listings-grid-section {
+      margin: 1.5rem 0;
+    }
+  }
+</style>

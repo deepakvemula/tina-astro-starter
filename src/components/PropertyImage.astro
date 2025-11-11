@@ -1,0 +1,39 @@
+---
+// Placeholder image component for development
+// Uses a placeholder service when actual images aren't available
+interface Props {
+  src: string;
+  alt: string;
+  class?: string;
+  width?: number;
+  height?: number;
+  loading?: "lazy" | "eager";
+}
+
+const {
+  src,
+  alt,
+  class: className = "",
+  width = 600,
+  height = 400,
+  loading = "lazy",
+} = Astro.props;
+
+// Check if image is a placeholder (relative path without domain)
+const isPlaceholder = src && !src.startsWith("http") && !src.startsWith("/");
+
+// Use placeholder service if needed
+const imageSrc = isPlaceholder
+  ? `https://placehold.co/${width}x${height}/0066cc/ffffff?text=${encodeURIComponent(alt)}`
+  : src ||
+    `https://placehold.co/${width}x${height}/cccccc/666666?text=No+Image`;
+---
+
+<img
+  src={imageSrc}
+  alt={alt}
+  class={className}
+  width={width}
+  height={height}
+  loading={loading}
+/>

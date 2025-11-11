@@ -1,174 +1,144 @@
-/*
-  The CSS in this style tag is based off of Bear Blog's default CSS.
-  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
-  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
- */
+@import url("animate.css");
+@import url("fonts.css");
+@import "tailwindcss";
 
+/* 0. color variables & fonts */
+/* 1. html elements */
+/* 2. utilities */
+
+/* 0. color variables & fonts */
 :root {
-	--accent: #2337ff;
-	--accent-dark: #000d8a;
-	--black: 15, 18, 25;
-	--gray: 96, 115, 159;
-	--gray-light: 229, 233, 240;
-	--gray-dark: 34, 41, 57;
-	--gray-gradient: rgba(var(--gray-light), 50%), #fff;
-	--box-shadow: 0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
-		0 16px 32px rgba(var(--gray), 33%);
+  --space-red: #90393a;
+  --space-yellow: #ffff85;
+  --space-sand: #e2d1c3;
+  --space-stone: #434343;
 }
-@font-face {
-	font-family: 'Atkinson';
-	src: url('/fonts/atkinson-regular.woff') format('woff');
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
+
+/* Required to ensure dark: modifiers work when manually toggling mode */
+/* REF: https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Kanit", "sans-serif";
+  --color-space-red: var(--space-red);
+  --color-space-yellow: var(--space-yellow);
+  --color-space-sand: var(--space-sand);
+  --color-space-stone: var(--space-stone);
+  --color-whitesmoke: whitesmoke;
 }
-@font-face {
-	font-family: 'Atkinson';
-	src: url('/fonts/atkinson-bold.woff') format('woff');
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
-}
+
+/* 1. html elements */
+html,
 body {
-	font-family: 'Atkinson', sans-serif;
-	margin: 0;
-	padding: 0;
-	text-align: left;
-	background: linear-gradient(var(--gray-gradient)) no-repeat;
-	background-size: 100% 600px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-	color: rgb(var(--gray-dark));
-	font-size: 20px;
-	line-height: 1.7;
+  @apply mx-0 my-auto min-h-screen p-0 text-base;
+  overscroll-behavior: none;
 }
+
+html.dark body {
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-space-stone) 0%,
+    black 100%
+  );
+  @apply bg-black bg-cover bg-no-repeat text-whitesmoke;
+}
+
+html.light body {
+  /* background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); */
+  background-image: linear-gradient(180deg, #fdfcfb 0%, #e2d1c3 100%);
+  @apply bg-space-sand bg-cover bg-no-repeat text-black;
+}
+
+/* semantic elements */
+header {
+  @apply sticky top-4 z-20 mr-auto ml-auto flex w-full max-w-3xl flex-col items-center justify-center px-0 py-0 text-base;
+}
+
+header > nav {
+  @apply flex flex-row items-center justify-between gap-2 rounded-4xl px-5 py-2 text-xs backdrop-blur-3xl sm:gap-8 sm:py-3 sm:text-base;
+  /* inner glow 👇 */
+  box-shadow: inset 0 0 0.5px 1px hsla(0, 0%, 100%, 0.075),
+    /* shadow ring 👇 */ 0 0 0 1px hsla(0, 0%, 0%, 0.05),
+    /* multiple soft shadows 👇 */ 0 0.3px 0.4px hsla(0, 0%, 0%, 0.02),
+    0 0.9px 1.5px hsla(0, 0%, 0%, 0.045), 0 3.5px 6px hsla(0, 0%, 0%, 0.09);
+}
+
 main {
-	width: 720px;
-	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 3em 1em;
+  @apply mx-auto flex flex-col items-start justify-between px-4 pt-0 pb-0 sm:items-center;
 }
-article {
-	width: 720px;
-	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 3em 1em;
+
+footer {
+  @apply mx-auto mt-12 flex w-full max-w-3xl flex-col flex-wrap items-center justify-center gap-4;
 }
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	margin: 0 0 0.5rem 0;
-	color: rgb(var(--black));
-	line-height: 1.2;
-}
+
 h1 {
-	font-size: 3.052em;
+  @apply py-4 text-2xl sm:py-6 sm:text-6xl;
 }
+
 h2 {
-	font-size: 2.441em;
+  @apply py-2 text-xl sm:py-4 sm:text-3xl;
 }
-h3 {
-	font-size: 1.953em;
-}
-h4 {
-	font-size: 1.563em;
-}
-h5 {
-	font-size: 1.25em;
-}
-strong,
-b {
-	font-weight: 700;
-}
-a {
-	color: var(--accent);
-}
-a:hover {
-	color: var(--accent);
-}
+
 p {
-	margin-bottom: 1em;
+  @apply mb-6;
 }
-.prose p {
-	margin-bottom: 2em;
-}
-textarea {
-	width: 100%;
-	font-size: 16px;
-}
-input {
-	font-size: 16px;
-}
-table {
-	width: 100%;
-}
+
 img {
-	max-width: 100%;
-	height: auto;
-	border-radius: 8px;
-}
-code {
-	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
-	border-radius: 2px;
-}
-pre {
-	padding: 1.5em;
-	border-radius: 8px;
-}
-pre > code {
-	all: unset;
-}
-blockquote {
-	border-left: 4px solid var(--accent);
-	padding: 0 0 0 20px;
-	margin: 0px;
-	font-size: 1.333em;
-}
-hr {
-	border: none;
-	border-top: 1px solid rgb(var(--gray-light));
-}
-@media (max-width: 720px) {
-	body {
-		font-size: 18px;
-	}
-	main {
-		padding: 1em;
-	}
+  @apply h-auto max-w-full rounded-xl;
 }
 
-.sr-only {
-	border: 0;
-	padding: 0;
-	margin: 0;
-	position: absolute !important;
-	height: 1px;
-	width: 1px;
-	overflow: hidden;
-	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
-	clip: rect(1px 1px 1px 1px);
-	/* maybe deprecated but we need to support legacy browsers */
-	clip: rect(1px, 1px, 1px, 1px);
-	/* modern browsers, clip-path works inwards from each corner */
-	clip-path: inset(50%);
-	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
-	white-space: nowrap;
+/* links */
+a.button-link:not(:disabled),
+button.button-link:not(:disabled) {
+  @apply inline-flex cursor-pointer items-center justify-center rounded-full border px-6 py-2 leading-tight transition hover:border-space-red hover:text-space-red sm:px-8 hover:dark:border-space-yellow hover:dark:text-space-yellow;
+}
+a.button-link.space-btn-filled:not(:disabled),
+button.button-link.space-btn-filled:not(:disabled) {
+  @apply bg-black text-whitesmoke hover:border-space-red hover:bg-space-red dark:bg-whitesmoke dark:text-black dark:hover:border-space-yellow dark:hover:bg-space-yellow;
+}
+a.button-link.space-btn-outlined:not(:disabled),
+button.button-link.space-btn-outlined:not(:disabled) {
+  @apply border border-black bg-transparent text-black hover:border-space-red hover:text-space-red dark:border-whitesmoke dark:bg-transparent dark:text-whitesmoke dark:hover:border-space-yellow dark:hover:text-space-yellow;
 }
 
-.social-links {
-	display: flex;
-	justify-content: center;
-	gap: 1em;
-	margin-top: 1em;
+html.dark a:not(.button-link) {
+  @apply text-whitesmoke;
 }
-.social-links a {
-	text-decoration: none;
-	color: rgb(var(--gray));
+
+html.light a:not(.button-link) {
+  @apply text-black;
 }
-.social-links a:hover {
-	color: rgb(var(--gray-dark));
+
+html.light a:not(.button-link):hover {
+  @apply text-space-red;
+}
+
+html.dark a:not(.button-link):hover {
+  @apply text-space-yellow;
+}
+
+.page-content {
+  @apply my-12 w-full px-4 text-center;
+}
+
+@keyframes cursor-blink {
+  0% {
+    opacity: 0;
+  }
+}
+
+.blinking {
+  animation: cursor-blink 1.2s steps(2) infinite;
+}
+
+@media (orientation: portrait) {
+  .page-content {
+    text-align: left;
+  }
+}
+
+@media (max-width: 315px) {
+  section {
+    gap: 3rem;
+  }
 }

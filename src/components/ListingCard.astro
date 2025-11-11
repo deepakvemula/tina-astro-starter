@@ -1,0 +1,181 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { formatPriceRange } from "../utils/listings";
+import { withBase } from "../utils/helpers";
+import PropertyImage from "./PropertyImage.astro";
+
+interface Props {
+  listing: CollectionEntry<"properties">;
+}
+
+const { listing } = Astro.props;
+const priceRange = formatPriceRange(
+  String(listing.data.base_price_min_lakhs),
+  String(listing.data.base_price_max_lakhs)
+);
+const imageUrls = listing.data.gallery_image_urls || [];
+const firstImage = imageUrls[0] || "placeholder.jpg";
+
+// Map listing status to theme-aligned badge styles
+const normalizedStatus = (listing.data.project_status || "")
+  .toLowerCase()
+  .trim();
+const statusStyles: Record<string, string> = {
+  "under construction":
+    "border-space-yellow text-gray-900 bg-space-yellow/90 dark:text-gray-900 dark:border-space-yellow dark:bg-space-yellow/90",
+  "ready to move":
+    "border-space-red text-white bg-space-red dark:border-space-yellow dark:text-gray-900 dark:bg-space-yellow/90",
+  "new launch":
+    "border-space-stone text-white bg-space-stone dark:border-whitesmoke dark:text-gray-900 dark:bg-whitesmoke/90",
+  "sold out":
+    "border-gray-400 text-white bg-gray-500 dark:border-gray-400 dark:text-gray-900 dark:bg-gray-300",
+};
+const badgeClass =
+  statusStyles[normalizedStatus] ||
+  "border-gray-400 text-white bg-gray-600 dark:text-gray-900 dark:bg-gray-300 dark:border-gray-400";
+---
+
+<article
+  class="listing-card group rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 bg-white dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 h-full flex flex-col"
+>
+  <a
+    href={withBase(`/properties/${listing.data.page_slug}`)}
+    class="flex flex-col h-full"
+  >
+    <!-- Image Container -->
+    <div
+      class="relative aspect-video overflow-hidden bg-gray-100 dark:bg-gray-700"
+    >
+      <PropertyImage
+        src={firstImage}
+        alt={listing.data.project_name}
+        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        width={600}
+        height={400}
+        loading="lazy"
+      />
+      {
+        listing.data.project_status && (
+          <div class="absolute top-3 right-3">
+            <span
+              class={`tag rounded-full text-xs px-3 py-1.5 border-2 shadow-lg backdrop-blur-md kanit-medium font-bold ${badgeClass}`}
+            >
+              {listing.data.project_status}
+            </span>
+          </div>
+        )
+      }
+    </div>
+
+    <!-- Content Container -->
+    <div class="flex flex-col flex-1 py-4 px-2 justify-between">
+      <!-- Title -->
+      <h3
+        class="text-base sm:text-sm font-bold line-clamp-2 text-gray-900 dark:text-white mb-2 leading-snug"
+      >
+        {listing.data.project_name}
+      </h3>
+
+      <!-- Location -->
+      {
+        listing.data.location_area && (
+          <div class="flex items-start justify-center">
+            <span class="text-sm mt-0.5 flex-shrink-0">📍</span>
+            <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
+              {listing.data.location_area}
+            </p>
+          </div>
+        )
+      }
+
+      <!-- Developer -->
+      {
+        listing.data.developer_name && (
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-2">
+            by{" "}
+            <span class="font-semibold text-gray-700 dark:text-gray-200">
+              {listing.data.developer_name}
+            </span>
+          </p>
+        )
+      }
+
+      <!-- Configurations & Size - Compact -->
+      {
+        (listing.data.unit_configurations ||
+          (listing.data.min_size_sqft && listing.data.max_size_sqft)) && (
+          <div class="flex items-center justify-between gap-2 text-xs sm:text-sm mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+            {listing.data.unit_configurations && (
+              <span class="text-gray-600 dark:text-gray-300 font-semibold">
+                {listing.data.unit_configurations}
+              </span>
+            )}
+            {listing.data.min_size_sqft && listing.data.max_size_sqft && (
+              <span class="text-gray-500 dark:text-gray-400 text-right">
+                {listing.data.min_size_sqft} - {listing.data.max_size_sqft}{" "}
+                sq.ft
+              </span>
+            )}
+          </div>
+        )
+      }
+
+      <!-- Price Section - Compact -->
+      {
+        (priceRange || listing.data.price_per_sqft) && (
+          <div class="my-auto flex items-center justify-between gap-3">
+            {priceRange && (
+              <div class="flex flex-col items-center justify-center">
+                <span class="text-[10px] text-gray-500 dark:text-gray-400 block mb-0.5">
+                  From
+                </span>
+                <div class="text-base sm:text-lg font-bold text-space-red dark:text-space-yellow leading-none">
+                  {priceRange}
+                </div>
+              </div>
+            )}
+            {listing.data.price_per_sqft && (
+              <div class="flex flex-col  justify-center text-right">
+                <div class="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">
+                  per sq.ft
+                </div>
+                <div class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  ₹{listing.data.price_per_sqft}
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      }
+    </div>
+  </a>
+</article>
+
+<style>
+  .listing-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .listing-card:hover {
+    transform: translateY(-8px);
+  }
+
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Ensure consistent card heights */
+  .listing-card {
+    height: 100%;
+  }
+</style>

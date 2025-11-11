@@ -1,28 +1,30 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content";
-import PropertyPost from "../../layouts/PropertyPost.astro"
+import MainLayout from "../../layouts/MainLayout.astro";
 import client from "../../../tina/__generated__/client";
 import AdminPropertyPost from "../../../tina/pages/AdminPropertyPost";
+import ImageCarousel from "../../components/ImageCarousel.astro";
+import { parseImageUrls, extractMapsSrc } from "../../utils/listings";
 
 export async function getStaticPaths() {
-	const properties = await getCollection("properties");
+  const properties = await getCollection("properties");
 
-	return properties.map((property) => ({
-		params: { slug: property.slug },
-		props: {
-			property,
-			getTinaProps: async () =>
-				client.queries.properties({
-					relativePath: property.data.tinaInfo.relativePath,
-				}),
-		},
-	}));
+  return properties.map((property) => ({
+    params: { slug: property.id },
+    props: {
+      property,
+      getTinaProps: async () =>
+        client.queries.properties({
+          relativePath: property.data.tinaInfo.relativePath,
+        }),
+    },
+  }));
 }
 
 const { property, getTinaProps } = Astro.props;
 const tinaProps = await getTinaProps();
 ---
 
-<PropertyPost {...tinaProps}>
-		<AdminPropertyPost {...tinaProps} client:tina/>
-</PropertyPost>
+<MainLayout>
+  <AdminPropertyPost {...tinaProps} client:tina />
+</MainLayout>

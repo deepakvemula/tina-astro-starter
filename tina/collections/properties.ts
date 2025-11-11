@@ -58,6 +58,9 @@ export const PropertiesCollection: Collection = {
       type: "number",
       name: "total_area_acres",
       label: "Total Area (Acres)",
+      ui: {
+        parse: (val) => (val ? parseFloat(val) : undefined),
+      },
     },
     {
       type: "number",

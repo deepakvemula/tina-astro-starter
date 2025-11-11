@@ -1,0 +1,291 @@
+---
+interface Props {
+  images: string[];
+  altPrefix?: string;
+  class?: string;
+}
+const {
+  images,
+  altPrefix = "Image",
+  class: className = "",
+} = Astro.props as Props;
+const uid = Math.random().toString(36).slice(2);
+---
+
+{
+  images && images.length > 0 ? (
+    <div class={`relative ${className}`} id={`carousel-${uid}`}>
+      {/* Viewport */}
+      <div
+        id={`viewport-${uid}`}
+        class="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar rounded-xl"
+        aria-roledescription="carousel"
+        aria-label="Property images"
+      >
+        {images.map((src, i) => (
+          <button
+            class="relative snap-start shrink-0 w-full focus:outline-none"
+            style="scroll-snap-align: start;"
+            aria-label={`Open image ${i + 1} of ${images.length}`}
+            data-index={i}
+            data-open-modal
+          >
+            <img
+              src={src}
+              alt={`${altPrefix} ${i + 1}`}
+              class="w-full h-64 sm:h-80 object-cover rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+          </button>
+        ))}
+      </div>
+
+      {/* Controls */}
+      <div class="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-1">
+        <button
+          class="pointer-events-auto inline-flex items-center justify-center size-9 rounded-full border bg-white/90 text-gray-900 hover:bg-white shadow-sm dark:bg-gray-900/70 dark:text-white dark:border-gray-700"
+          aria-label="Previous image"
+          data-prev
+        >
+          ‹
+        </button>
+        <button
+          class="pointer-events-auto inline-flex items-center justify-center size-9 rounded-full border bg-white/90 text-gray-900 hover:bg-white shadow-sm dark:bg-gray-900/70 dark:text-white dark:border-gray-700"
+          aria-label="Next image"
+          data-next
+        >
+          ›
+        </button>
+      </div>
+
+      {/* Dots */}
+      <div
+        class="mt-3 flex items-center justify-center gap-1.5"
+        id={`dots-${uid}`}
+        aria-hidden="true"
+      >
+        {images.map((_, i) => (
+          <button
+            class="size-2.5 rounded-full bg-gray-300 dark:bg-gray-700"
+            data-dot={i}
+          />
+        ))}
+      </div>
+
+      {/* Modal */}
+      <div
+        id={`modal-${uid}`}
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Image viewer"
+      >
+        <div class="relative max-w-6xl w-full">
+          <img
+            id={`modal-img-${uid}`}
+            src={images[0]}
+            alt="Full-size image"
+            class="max-h-[80vh] w-full object-contain rounded-lg"
+          />
+          <button
+            class="absolute top-2 right-2 size-9 rounded-full bg-white/90 text-gray-900 border border-gray-200 shadow-sm hover:bg-white dark:bg-gray-900/80 dark:text-white dark:border-gray-700 z-10 flex items-center justify-center"
+            data-close
+            aria-label="Close"
+            type="button"
+          >
+            ✕
+          </button>
+          <div class="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-1">
+            <button
+              class="inline-flex items-center justify-center size-10 rounded-full bg-white/90 text-gray-900 border border-gray-200 shadow-sm hover:bg-white dark:bg-gray-900/80 dark:text-white dark:border-gray-700"
+              data-prev
+              aria-label="Previous"
+            >
+              ‹
+            </button>
+            <button
+              class="inline-flex items-center justify-center size-10 rounded-full bg-white/90 text-gray-900 border border-gray-200 shadow-sm hover:bg-white dark:bg-gray-900/80 dark:text-white dark:border-gray-700"
+              data-next
+              aria-label="Next"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null
+}
+
+<script define:vars={{ uid }}>
+  (function () {
+    const viewport = document.getElementById(`viewport-${uid}`);
+    const dotsWrap = document.getElementById(`dots-${uid}`);
+    const modal = document.getElementById(`modal-${uid}`);
+    const modalImg = document.getElementById(`modal-img-${uid}`);
+
+    if (!viewport) return;
+
+    let index = 0;
+    let total = viewport.children.length;
+
+    function updateDots() {
+      if (!dotsWrap) return;
+      [...dotsWrap.querySelectorAll("button")].forEach((dot, i) => {
+        if (i === index) {
+          dot.classList.add("bg-gray-900", "dark:bg-white");
+        } else {
+          dot.classList.remove("bg-gray-900", "dark:bg-white");
+        }
+      });
+    }
+
+    function scrollToIndex(i) {
+      if (!viewport) return;
+      // Add looping: wrap around at both ends
+      if (i < 0) i = total - 1;
+      if (i >= total) i = 0;
+      index = i;
+      const child = viewport.children[index];
+      if (child) {
+        child.scrollIntoView({
+          behavior: "smooth",
+          inline: "start",
+          block: "nearest",
+        });
+      }
+      updateDots();
+    }
+
+    function showModal(i) {
+      if (!modal || !modalImg) return;
+      // Add looping: wrap around at both ends
+      if (i < 0) i = total - 1;
+      if (i >= total) i = 0;
+      index = i;
+      const imgEl = viewport.children[index]?.querySelector("img");
+      if (imgEl) modalImg.src = imgEl.src;
+      modal.classList.remove("hidden");
+      modal.style.display = "flex";
+      document.body.classList.add("overflow-hidden");
+      updateDots();
+    }
+
+    function hideModal() {
+      if (!modal) return;
+      modal.classList.add("hidden");
+      modal.style.display = "none";
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    // Wire buttons
+    const root = document.getElementById(`carousel-${uid}`);
+    if (!root) return;
+
+    root.querySelectorAll("[data-prev]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.currentTarget.closest(`#modal-${uid}`)) {
+          // modal prev - will loop
+          showModal(index - 1);
+        } else {
+          scrollToIndex(index - 1);
+        }
+      });
+    });
+
+    root.querySelectorAll("[data-next]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.currentTarget.closest(`#modal-${uid}`)) {
+          // modal next - will loop
+          showModal(index + 1);
+        } else {
+          scrollToIndex(index + 1);
+        }
+      });
+    });
+
+    root.querySelectorAll("[data-open-modal]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const i = Number(e.currentTarget.getAttribute("data-index")) || 0;
+        showModal(i);
+      });
+    });
+
+    const closeBtn = modal?.querySelector("[data-close]");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        hideModal();
+      });
+    }
+
+    // Close modal on backdrop click
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          hideModal();
+        }
+      });
+    }
+
+    // Dots click
+    if (dotsWrap) {
+      dotsWrap.querySelectorAll("button").forEach((dot, i) => {
+        dot.addEventListener("click", (e) => {
+          e.preventDefault();
+          scrollToIndex(i);
+        });
+      });
+    }
+
+    // Update index on scroll
+    let ticking = false;
+    viewport.addEventListener("scroll", () => {
+      if (ticking) return;
+      window.requestAnimationFrame(() => {
+        if (!viewport) return;
+        const children = Array.from(viewport.children);
+        const x = viewport.scrollLeft;
+        let nearest = 0;
+        let nearestDist = Infinity;
+        children.forEach((el, i) => {
+          const dist = Math.abs(el.offsetLeft - x);
+          if (dist < nearestDist) {
+            nearestDist = dist;
+            nearest = i;
+          }
+        });
+        index = nearest;
+        updateDots();
+        ticking = false;
+      });
+      ticking = true;
+    });
+
+    // Keyboard
+    window.addEventListener("keydown", (e) => {
+      if (!modal || modal.classList.contains("hidden")) return;
+      if (e.key === "Escape") hideModal();
+      if (e.key === "ArrowLeft") showModal(index - 1); // will loop
+      if (e.key === "ArrowRight") showModal(index + 1); // will loop
+    });
+
+    updateDots();
+  })();
+</script>
+
+<style>
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>
